@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Validação de Código</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+    body {
+      display: flex; justify-content: center; align-items: center; min-height: 100vh;
+      background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), 
+                  url('https://images.alphacoders.com/133/1337424.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+    .container {
+      background: rgba(20, 15, 38, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(138, 43, 226, 0.4); padding: 40px 30px; border-radius: 20px;
+      box-shadow: 0 0 30px rgba(138, 43, 226, 0.5), 0 0 15px rgba(0, 191, 255, 0.3);
+      width: 100%; max-width: 450px; text-align: center; color: #fff;
+    }
+    .label-titulo {
+      font-size: 1.4rem; font-weight: 600; margin-bottom: 20px;
+      text-transform: uppercase; letter-spacing: 1.5px; color: #e0e0e0;
+      text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    }
+    textarea {
+      width: 100%; height: 120px; background: rgba(0, 0, 0, 0.6);
+      border: 1px solid #7b2cbf; border-radius: 10px; padding: 15px;
+      color: #00f0ff; font-size: 1rem; resize: none; outline: none;
+      transition: all 0.3s ease; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+    }
+    textarea:focus { border-color: #00f0ff; box-shadow: 0 0 15px rgba(0, 240, 255, 0.4); }
+    button {
+      margin-top: 20px; width: 100%; padding: 14px;
+      background: linear-gradient(45deg, #7b2cbf, #3a0ca3, #00f0ff);
+      border: none; border-radius: 10px; color: white; font-size: 1.1rem; font-weight: bold; cursor: pointer;
+    }
+    .status-container { display: none; margin-top: 20px; }
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.1); width: 50px; height: 50px; border-radius: 50%;
+      border-left-color: #00f0ff; border-top-color: #7b2cbf;
+      animation: spin 1s linear infinite; margin: 20px auto;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .texto-validando { font-size: 1.2rem; color: #00f0ff; }
+    .timer { margin-top: 10px; font-size: 0.9rem; color: #aaa; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="formulario">
+      <div class="label-titulo">Cole o código aqui</div>
+      <textarea id="codigoInput" placeholder="Cole seu código de validação..."></textarea>
+      <button onclick="enviarCodigo()">Validar Código</button>
+    </div>
+
+    <div id="status" class="status-container">
+      <div class="spinner"></div>
+      <div class="texto-validando">Validando código...</div>
+      <div class="timer" id="timerDisplay">Tempo restante: 20:00</div>
+    </div>
+  </div>
+
+  <script>
+    async function enviarCodigo() {
+      const codigo = document.getElementById('codigoInput').value.trim();
+      if (!codigo) { alert('Por favor, cole um código!'); return; }
+
+      try {
+        const resposta = await fetch('/api/validar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ codigo })
+        });
+
+        if (resposta.ok) {
+          document.getElementById('formulario').style.display = 'none';
+          document.getElementById('status').style.display = 'block';
+          iniciarTimer(20 * 60);
+        } else {
+          alert('Erro ao enviar o código.');
+        }
+      } catch (err) { alert('Erro de conexão.'); }
+    }
+
+    function iniciarTimer(segundos) {
+      let tempoRestante = segundos;
+      const timerDisplay = document.getElementById('timerDisplay');
+      setInterval(() => {
+        tempoRestante--;
+        const min = String(Math.floor(tempoRestante / 60)).padStart(2, '0');
+        const seg = String(tempoRestante % 60).padStart(2, '0');
+        timerDisplay.textContent = `Tempo restante: ${min}:${seg}`;
+        if (tempoRestante <= 0) { location.reload(); }
+      }, 1000);
+    }
+  </script>
+</body>
+</html>
